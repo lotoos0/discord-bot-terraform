@@ -1,0 +1,103 @@
+# Discord Bot AWS Deployment (Terraform)
+
+#### This project uses an existing [DISCORD-BOT](https://github.com/lotoos0/discord-bot)  - Source code and Docker image.
+---
+This project provisions an **EC2 instance on AWS** with **Terraform** to run a Discord music bot inside Docker.  
+Infrastructure follows: SSM Session Manager for access (no SSH), secure token storage in SSM Parameter Store, and IAM roles for least privilege.
+
+---
+
+## Architecture
+
+Terraform provisions the following resources:
+
+- **VPC & Subnet (default)** — reuses AWS default VPC and subnets  
+- **Security Group** — egress-only (internet access, no inbound ports)  
+- **IAM Role & Instance Profile** —  
+  - `AmazonSSMManagedInstanceCore` → allows SSM Session Manager access  
+  - Custom policy → allows reading the bot token from SSM Parameter Store  
+- **EC2 Instance** —  
+  - Amazon Linux 2 with Docker + AWS CLI installed via `user_data.sh`  
+  - Automatically pulls bot token from SSM and runs container from Docker Hub  
+- **Outputs** — instance ID and public IP
+
+---
+
+## Requirements
+
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.5  
+- AWS account with IAM user/role configured  
+- AWS CLI installed and configured (`aws configure`)  
+- Docker image of bot published on Docker Hub (e.g. `lotoos0/discord-bot:latest`)  
+- Discord token stored in **AWS SSM Parameter Store**, e.g.:  
+
+```bash
+aws ssm put-parameter \
+  --name "/discord/bot/token" \
+  --value "YOUR_TOKEN" \
+  --type SecureString
+```
+## Setup 
+
+```bash
+git clone https://github.com/<your-username>/discord-bot-aws-tf.git
+cd discord-bot-aws-tf
+```
+1. Initialize Terraform
+```bash
+terraform init
+```
+2. Check plan
+```bash
+terraform plan
+```
+3. Apply changes
+```bash
+terraform apply
+```
+## Configuration
+
+Edit ```terraform.tfvars``` to match your setup:
+```hcl
+aws_region     = "eu-central-1"
+ssm_token_name = "/discord/bot/token"
+bot_image      = "lotoos0/discord-bot:latest"
+```
+
+## Access the Instance
+
+No SSH needed. Use AWS SSM Session Manager:
+```bash
+aws ssm start-session --target <INSTANCE_ID>
+```
+Check running containers:
+```bash
+docker ps
+```
+## Outputs
+After apply, Terraform prints:
+- instance_id — EC2 instance ID
+- instance_public_ip — public IP (for debugging, not required for bot operation)
+
+## Files
+- `main.tf` - resources (EC2, IAM, SG, AMI)
+- `variables.tf` - input variables
+- `outputs.tf` - exposed outputs
+- `provider.tf` - provider config (AWS)
+- `user_data.sh` - instance bootstrap (Docker, AWS CLI, run bot)
+
+## Screenshots
+
+### Terraform Apply
+
+### Bot Running
+
+
+## Notes
+- The bot runs fully automated on EC2 via Terraform.
+- No inbound ports are required (safe setup).
+- Logs available on instance (`/var/log/user_data.log`).
+
+## License
+
+Licensed under the MIT license.
