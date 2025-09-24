@@ -96,8 +96,9 @@ resource "aws_instance" "bot" {
   instance_type          = "t3.micro"
   subnet_id              = element(data.aws_subnets.default.ids, 0)
   vpc_security_group_ids = [aws_security_group.bot_sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.bot_profile.name
   user_data              = local.user_data
+
 
   associate_public_ip_address = true # prosto: internet na SSM i pull obrazu
 
