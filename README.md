@@ -105,8 +105,8 @@ docker logs -n 100 discord-bot
   - IAM least privilege: EC2 can only `ssm:GetParameter` on `/discord/bot/*`
 
 - Cost:
-  - Instance type: `t3.micro` (eligible for free tier)
-  - Storage: gp3 EBS volume
+  - Instance type: `t3.micro` (cheap one) 
+  - Storage: gp2 EBS volume
   - Outbound network transfer billed normally
 
 ## Cost & Reliability
