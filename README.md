@@ -3,19 +3,25 @@
 #### This project uses an existing [DISCORD-BOT](https://github.com/lotoos0/discord-bot)  - Source code and Docker image.
 ---
 This project provisions an **EC2 instance on AWS** with **Terraform** to run a Discord music bot inside Docker.  
-Infrastructure follows: SSM Session Manager for access (no SSH), secure token storage in SSM Parameter Store, and IAM roles for least privilege.
+Infrastructure follows: SSM Session Manager for access (no SSH), secure token storage in SSM Parameter Store, and IAM roles for least privilege. 
 
 ---
 
 ## Architecture
+
+```txt
+Dev -> GitLab CI (build+scan) -> Docker Registry
+Terraform -> AWS: EC2 (Docker), IAM Role, SSM Param Store
+Discord Bot (container) <- token z SSM
+```
 
 Terraform provisions the following resources:
 
 - **VPC & Subnet (default)** - reuses AWS default VPC and subnets  
 - **Security Group** - egress-only (internet access, no inbound ports)  
 - **IAM Role & Instance Profile** -  
-  - `AmazonSSMManagedInstanceCore` → allows SSM Session Manager access  
-  - Custom policy → allows reading the bot token from SSM Parameter Store  
+  - `AmazonSSMManagedInstanceCore` -> allows SSM Session Manager access  
+  - Custom policy -> allows reading the bot token from SSM Parameter Store  
 - **EC2 Instance** -  
   - Amazon Linux 2 with Docker + AWS CLI installed via `user_data.sh`  
   - Automatically pulls bot token from SSM and runs container from Docker Hub  
