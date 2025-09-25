@@ -94,7 +94,7 @@ Check logs and container:
 ```bash
 sudo tail -n +1 /var/log/cloud-init-output.log
 sudo tail -n +1 /var/log/user_data.log
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.RestartCount}}"
+docker inspect --format='{{ .Name }} {{ .RestartCount }}' $(docker ps -q) #  Here you will probably have to use sudo to: `docker inspect` and `docker ps -q`
 docker logs -n 100 discord-bot
 ```
 ## Cost & Security
