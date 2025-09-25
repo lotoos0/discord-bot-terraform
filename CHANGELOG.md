@@ -25,10 +25,6 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 - Updated README to reflect architecture and security hardening:
   - ASCII diagram of Dev → CI/CD → Terraform → AWS → Bot
-  - Security notes: SSM for secrets, IAM least privilege, egress-only SG, no SSH (Session Manager only)
-  - Cost & Security section with guidance on AWS resource usage
-  - Deployment steps (`terraform init/plan/apply/destroy`) and verification steps (`aws ssm start-session`, `docker ps`, logs)
-- Added recommendations for future improvements (CloudWatch Logs integration, GitLab CI image scanning, ECS/EKS migration)
 
 
 
