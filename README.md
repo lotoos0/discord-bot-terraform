@@ -12,7 +12,7 @@ Infrastructure follows: SSM Session Manager for access (no SSH), secure token st
 ```txt
 Dev -> GitLab CI (build+scan) -> Docker Registry
 Terraform -> AWS: EC2 (Docker), IAM Role, SSM Param Store
-Discord Bot (container) <- token z SSM
+Discord Bot (container) <- token from SSM
 ```
 
 Terraform provisions the following resources:
