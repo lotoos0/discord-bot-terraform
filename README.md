@@ -11,15 +11,15 @@ Infrastructure follows: SSM Session Manager for access (no SSH), secure token st
 
 Terraform provisions the following resources:
 
-- **VPC & Subnet (default)** — reuses AWS default VPC and subnets  
-- **Security Group** — egress-only (internet access, no inbound ports)  
-- **IAM Role & Instance Profile** —  
+- **VPC & Subnet (default)** - reuses AWS default VPC and subnets  
+- **Security Group** - egress-only (internet access, no inbound ports)  
+- **IAM Role & Instance Profile** -  
   - `AmazonSSMManagedInstanceCore` → allows SSM Session Manager access  
   - Custom policy → allows reading the bot token from SSM Parameter Store  
-- **EC2 Instance** —  
+- **EC2 Instance** -  
   - Amazon Linux 2 with Docker + AWS CLI installed via `user_data.sh`  
   - Automatically pulls bot token from SSM and runs container from Docker Hub  
-- **Outputs** — instance ID and public IP
+- **Outputs** - instance ID and public IP
 
 ---
 
@@ -59,10 +59,12 @@ terraform apply
 
 Edit ```terraform.tfvars``` to match your setup:
 ```hcl
-aws_region     = "eu-central-1"
-ssm_token_name = "/discord/bot/token"
-bot_image      = "lotoos0/discord-bot:latest"
+aws_region     = "your-aws-region"          
+ssm_token_name = "your-ssm-token-path"      
+bot_image      = "your-docker-image:tag"    
+instance_type  = "your-instance-type"       
 ```
+Don't commit terraform.tfvars!
 
 ## Access the Instance
 
@@ -76,8 +78,8 @@ docker ps
 ```
 ## Outputs
 After apply, Terraform prints:
-- instance_id — EC2 instance ID
-- instance_public_ip — public IP (for debugging, not required for bot operation)
+- instance_id - EC2 instance ID
+- instance_public_ip - public IP (for debugging, not required for bot operation)
 
 ## Files
 - `main.tf` - resources (EC2, IAM, SG, AMI)
@@ -85,13 +87,6 @@ After apply, Terraform prints:
 - `outputs.tf` - exposed outputs
 - `provider.tf` - provider config (AWS)
 - `user_data.sh` - instance bootstrap (Docker, AWS CLI, run bot)
-
-## Screenshots
-
-### Terraform Apply
-
-### Bot Running
-
 
 ## Notes
 - The bot runs fully automated on EC2 via Terraform.
@@ -101,3 +96,4 @@ After apply, Terraform prints:
 ## License
 
 Licensed under the MIT license.
+
