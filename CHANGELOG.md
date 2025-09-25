@@ -1,9 +1,6 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-# Changelog
-All notable changes to this project will be documented in this file.
-
 ## [1.0.0] - 2025-09-25
 ### Added
 - `iam.tf`: introduced dedicated IAM role, least-privilege SSM policy, and instance profile for EC2
@@ -26,5 +23,17 @@ All notable changes to this project will be documented in this file.
 - Updated README to reflect architecture and security hardening:
   - ASCII diagram of Dev → CI/CD → Terraform → AWS → Bot
 
+## [1.1.0] - 2025-09-25
+### Added
+- README: Cost & Reliability section
+- README: Cost & Security section
+- Auto-stop/start instructions with cron + AWS CLI (cost optimization)
+- Container restart policy (`--restart=always`) with verification via `docker ps`
+- Documentation notes on how to reduce costs outside usage hours
 
-
+### Changed
+- README: improved deployment and verification flow
+- README: updated ASCII architecture diagram (now its super clean)
+- README: improved Configuration section 
+- README: adjusted section headings (e.g. Access the Instance)
+- README: removed Outputs section
