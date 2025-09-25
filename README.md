@@ -10,9 +10,16 @@ Infrastructure follows: SSM Session Manager for access (no SSH), secure token st
 ## Architecture
 
 ```txt
-Dev -> GitLab CI (build+scan) -> Docker Registry
-Terraform -> AWS: EC2 (Docker), IAM Role, SSM Param Store
-Discord Bot (container) <- token from SSM
+Developer ──▶ GitLab CI (build + scan) ──▶ Docker Registry (Hub/ECR)
+      │
+      └──▶ Terraform ─────────────────────▶ AWS
+                                           ├─ EC2 (Docker runtime)
+                                           ├─ IAM Role (SSM + least privilege to SSM param)
+                                           └─ SSM Parameter Store (SecureString: DISCORD_TOKEN)
+
+EC2 (container):
+  discord-bot  ◀── pulls image ◀── Registry
+  DISCORD_TOKEN ◀── ssm:GetParameter (with decryption)
 ```
 
 Terraform provisions the following resources:
@@ -61,9 +68,14 @@ terraform plan
 ```bash
 terraform apply
 ```
+
+4. Cleanup lab
+```bash
+terraform destroy
+```
 ## Configuration
 
-Edit ```terraform.tfvars``` to match your setup:
+Copy `examples/terraform.tfvars.example` to `terraform.tfvars` and fill in your values:
 ```hcl
 aws_region     = "your-aws-region"          
 ssm_token_name = "your-ssm-token-path"      
@@ -76,16 +88,36 @@ Don't commit terraform.tfvars!
 
 No SSH needed. Use AWS SSM Session Manager:
 ```bash
-aws ssm start-session --target <INSTANCE_ID>
+aws ssm start-session --target $(terraform output -raw instance_id)
 ```
-Check running containers:
+Check logs and container:
 ```bash
-docker ps
+sudo tail -n +1 /var/log/cloud-init-output.log
+sudo tail -n +1 /var/log/user_data.log
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.RestartCount}}"
+docker logs -n 100 discord-bot
 ```
-## Outputs
-After apply, Terraform prints:
-- instance_id - EC2 instance ID
-- instance_public_ip - public IP (for debugging, not required for bot operation)
+## Cost & Security
+
+- Security:
+  - No ingress: only egress traffic, no SSH (Session Manager only)
+  - Secrets stored in SSM Parameter Store as SecureString
+  - IAM least privilege: EC2 can only `ssm:GetParameter` on `/discord/bot/*`
+
+- Cost:
+  - Instance type: `t3.micro` (eligible for free tier)
+  - Storage: gp3 EBS volume
+  - Outbound network transfer billed normally
+
+## Cost & Reliability
+
+- Auto-stop/start: use cron on EC2 to stop instance at night and start in the morning:
+```
+crontab -e
+0 1 * * * aws ec2 stop-instances --instance-ids <id> --region eu-central-1
+0 7 * * * aws ec2 start-instances --instance-ids <id> --region eu-central-1
+```
+This avoids paying for unused hours.
 
 ## Files
 - `main.tf` - resources (EC2, IAM, SG, AMI)
@@ -99,7 +131,9 @@ After apply, Terraform prints:
 - No inbound ports are required (safe setup).
 - Logs available on instance (`/var/log/user_data.log`).
 
+## Changelog
+See [CHANGELOG.md](/CHANGELOG.md) for detailed history. 
+
 ## License
 
 Licensed under the MIT license.
-
