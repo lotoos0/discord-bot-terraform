@@ -1,0 +1,6 @@
+aws_region      = "your-aws-region"
+instance_type   = "your-instance-type" 
+ssm_token_name  = "your-ssm-token-path"
+bot_image       = "your-docker-image:tag"
+
+
